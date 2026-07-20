@@ -1,61 +1,63 @@
-// Job Urgency Categories Configuration
-// Edit these to customize how jobs are categorized based on hours since posting
+// Job Urgency Tags Configuration
+// Edit these to customize how jobs are tagged based on days since posting
+// Tags are shown inline on job rows for quick visual scanning
 
-const JOB_CATEGORIES = [
+const JOB_TAGS = [
   {
-    name: '🆕 Fresh Outta HR',
+    name: 'FRESH',
     emoji: '🆕',
     min: 0,
     max: 1,
-    tag: 'NEW',
-    tagColor: 'green' // CSS class suffix
+    label: 'Just dropped!',
+    color: 'fresh'
   },
   {
-    name: '🔥 Recruiters Are Watching',
+    name: 'HEATING UP',
     emoji: '🔥',
     min: 2,
     max: 7,
-    tag: 'HOT',
-    tagColor: 'hot'
+    label: 'Getting hot 🔥',
+    color: 'hot'
   },
   {
-    name: '😎 Still Up for Grabs',
+    name: 'CHILL',
     emoji: '😎',
     min: 8,
     max: 19,
-    tag: null,
-    tagColor: null
+    label: 'Still cool',
+    color: 'chill'
   },
   {
-    name: '⏰ Don\'t Ghost This Job',
+    name: 'TICKING',
     emoji: '⏰',
     min: 20,
     max: 23,
-    tag: 'COLD',
-    tagColor: 'cold'
+    label: 'Clock\'s ticking',
+    color: 'ticking'
   },
   {
-    name: '🚨 Apply Before It Ghosts You! 👻',
+    name: 'EXPIRE SOON',
     emoji: '🚨',
     min: 24,
-    max: 27,
-    tag: 'URGENT',
-    tagColor: 'urgent'
+    max: 999,
+    label: 'Ghost incoming 👻',
+    color: 'expire'
   }
 ];
 
-// Helper function to get category by hours
-function getCategoryByHours(hoursOld) {
-  for (let i = 0; i < JOB_CATEGORIES.length; i++) {
-    const cat = JOB_CATEGORIES[i];
-    if (hoursOld >= cat.min && hoursOld <= cat.max) {
-      return { ...cat, index: i };
+// Helper function to get tag by days old
+function getTagByDays(daysOld) {
+  for (let i = 0; i < JOB_TAGS.length; i++) {
+    const tag = JOB_TAGS[i];
+    if (daysOld >= tag.min && daysOld <= tag.max) {
+      return { ...tag, index: i };
     }
   }
-  return { ...JOB_CATEGORIES[JOB_CATEGORIES.length - 1], index: JOB_CATEGORIES.length - 1 };
+  // Default to last tag if beyond range
+  return { ...JOB_TAGS[JOB_TAGS.length - 1], index: JOB_TAGS.length - 1 };
 }
 
 // Export for use in main script
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { JOB_CATEGORIES, getCategoryByHours };
+  module.exports = { JOB_TAGS, getTagByDays };
 }
