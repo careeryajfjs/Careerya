@@ -142,16 +142,6 @@
   }
   .btn-amber:hover { background: var(--amber-soft); transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgba(0,82,204,0.6); }
 
-  .category-header {
-    display: flex; align-items: center; gap: 10px; padding: 16px 26px 10px;
-    font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text);
-    border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.08);
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  :root.light-mode .category-header { background: rgba(0,0,0,0.02); }
-  .category-emoji { font-size: 18px; }
-  .category-count { color: var(--text-faint); font-size: 11px; margin-left: auto; }
-
   .col-hdr {
     display: grid; grid-template-columns: 108px 1fr 190px 170px 100px; gap: 14px;
     padding: 10px 26px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
@@ -170,18 +160,22 @@
   .cell-time { font-family: var(--mono); font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .cell-time .day { display: block; font-size: 10px; color: var(--text-faint); margin-top: 2px; }
 
-  .cell-title { min-width: 0; }
+  .cell-title { min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .cell-title .t { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cell-title .urgency-tag {
-    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: #1b2a1f;
-    background: var(--green); padding: 1px 5px; border-radius: 3px; margin-left: 8px; vertical-align: middle; font-weight: 700;
+  
+  .urgency-tag {
+    display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9px; 
+    letter-spacing: 0.08em; font-weight: 700; padding: 2px 6px; border-radius: 3px; 
+    white-space: nowrap; flex-shrink: 0;
   }
-  .cell-title .urgency-tag.hot {
-    background: #ff6b6b; color: #ffffff;
-  }
-  .cell-title .urgency-tag.cold {
-    background: #888888; color: #ffffff;
-  }
+  .urgency-tag.fresh { background: #5fd68a; color: #1b2a1f; }
+  .urgency-tag.hot { background: #ff6b6b; color: #ffffff; }
+  .urgency-tag.chill { background: #4dabf7; color: #ffffff; }
+  .urgency-tag.ticking { background: #ffd93d; color: #1a1a1a; }
+  .urgency-tag.expire { background: #ff6b9d; color: #ffffff; }
+  
+  .urgency-tag .tag-emoji { font-size: 11px; }
+  .urgency-tag .tag-label { font-size: 8px; }
 
   .cell-company { font-family: var(--mono); font-size: 12.5px; color: var(--amber-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cell-city { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -221,7 +215,7 @@
     .sync-bar { padding: 9px 18px; }
     .board-footer { padding: 14px 18px; }
     .hdr-right { width: 100%; justify-content: space-between; }
-    .category-header { padding: 14px 18px 10px; }
+    .cell-title { flex-direction: column; align-items: flex-start; }
   }
 </style>
 
@@ -335,16 +329,16 @@
   var REFRESH_MS = 5 * 60 * 1000; // auto re-fetch every 5 minutes
 
   var RAW = [];              // full job list, current source of truth
-  var state = { q: '', city: '', company: '', order: [] };
+  var state = { q: '', city: '', company: '' };
   var animatedRows = new WeakSet();
   var FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-  function getCategoryIndex(hoursOld){
-    for(var i = 0; i < JOB_CATEGORIES.length; i++){
-      var cat = JOB_CATEGORIES[i];
-      if(hoursOld >= cat.min && hoursOld <= cat.max) return i;
+  function getTagByDays(daysOld){
+    for(var i = 0; i < JOB_TAGS.length; i++){
+      var tag = JOB_TAGS[i];
+      if(daysOld >= tag.min && daysOld <= tag.max) return tag;
     }
-    return JOB_CATEGORIES.length - 1;
+    return JOB_TAGS[JOB_TAGS.length - 1];
   }
 
   // ---------- CSV parsing (RFC4180-ish, handles quoted commas/newlines) ----------
@@ -419,16 +413,6 @@
     return out;
   }
 
-  function shuffledIndices(n){
-    var arr = [];
-    for(var i = 0; i < n; i++) arr.push(i);
-    for(var i = n - 1; i > 0; i--){
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-    }
-    return arr;
-  }
-
   function uniqueSorted(arr){
     var seen = {}, out = [];
     arr.forEach(function(v){ if(v && !seen[v]){ seen[v]=true; out.push(v);} });
@@ -450,17 +434,18 @@
   }
 
   function timeAgo(iso){
-    if(!iso) return { rel: '—', day: '', isNew:false, hoursOld: 999 };
+    if(!iso) return { rel: '—', day: '', daysOld: 999 };
     var d = new Date(iso);
-    if(isNaN(d.getTime())) return { rel: '—', day: '', isNew:false, hoursOld: 999 };
+    if(isNaN(d.getTime())) return { rel: '—', day: '', daysOld: 999 };
     var now = new Date();
     var diffH = (now - d) / 36e5;
+    var daysOld = Math.floor(diffH / 24);
     var rel;
     if (diffH < 1) rel = Math.max(1, Math.round(diffH*60)) + 'm ago';
     else if (diffH < 24) rel = Math.round(diffH) + 'h ago';
-    else rel = Math.round(diffH/24) + 'd ago';
+    else rel = daysOld + 'd ago';
     var day = d.toLocaleDateString(undefined, {day:'2-digit', month:'short'});
-    return { rel: rel, day: day, isNew: diffH >= 0 && diffH < 1, hoursOld: Math.round(diffH) };
+    return { rel: rel, day: day, daysOld: daysOld };
   }
 
   function escapeHtml(s){
@@ -471,10 +456,7 @@
 
   function applyFilters(){
     var q = state.q.trim().toLowerCase();
-    var order = state.order.length === RAW.length ? state.order : shuffledIndices(RAW.length);
-    state.order = order;
-    var ordered = order.map(function(idx){ return RAW[idx]; });
-    return ordered.filter(function(j){
+    return RAW.filter(function(j){
       if(state.city && j.city !== state.city) return false;
       if(state.company && j.c !== state.company) return false;
       if(q){
@@ -545,16 +527,12 @@
     titleInner.textContent = j.t;
     cTitle.appendChild(titleInner);
     
-    if(ta.isNew || ta.hoursOld <= 27){
-      var tag = document.createElement('span');
-      tag.className = 'urgency-tag';
-      var catIdx = getCategoryIndex(ta.hoursOld);
-      var cat = JOB_CATEGORIES[catIdx];
-      if(cat.tagColor === 'hot') tag.classList.add('hot');
-      else if(cat.tagColor === 'cold') tag.classList.add('cold');
-      tag.textContent = cat.tag || '✓';
-      cTitle.appendChild(tag);
-    }
+    // Add urgency tag inline
+    var tag = getTagByDays(ta.daysOld);
+    var tagEl = document.createElement('span');
+    tagEl.className = 'urgency-tag ' + tag.color;
+    tagEl.innerHTML = '<span class="tag-emoji">' + tag.emoji + '</span><span class="tag-label">' + tag.name + '</span>';
+    cTitle.appendChild(tagEl);
 
     var cCompany = document.createElement('div');
     cCompany.className = 'cell-company';
@@ -588,56 +566,24 @@
     document.getElementById('emptyState').style.display = list.length === 0 ? 'block' : 'none';
 
     if(list.length === 0){
-      document.getElementById('countNote').textContent = 'No positions match those filters — shuffled';
+      document.getElementById('countNote').textContent = 'No positions match those filters';
       return;
     }
 
     var frag = document.createDocumentFragment();
     var obs = getObserver();
     
-    // Group jobs by category
-    var grouped = {};
-    for(var i = 0; i < JOB_CATEGORIES.length; i++){
-      grouped[i] = [];
-    }
-    
+    // Render jobs in original order (no sorting)
     list.forEach(function(j){
-      var ta = timeAgo(j.d);
-      var catIdx = getCategoryIndex(ta.hoursOld);
-      grouped[catIdx].push(j);
+      var row = buildRow(j);
+      frag.appendChild(row);
+      obs.observe(row);
     });
-
-    // Render each category with header
-    for(var catIdx = 0; catIdx < JOB_CATEGORIES.length; catIdx++){
-      var jobs = grouped[catIdx];
-      if(jobs.length === 0) continue;
-      
-      var cat = JOB_CATEGORIES[catIdx];
-      
-      // Category header
-      var header = document.createElement('div');
-      header.className = 'category-header';
-      header.innerHTML = '<span class="category-emoji">' + cat.emoji + '</span><span>' + cat.name + '</span><span class="category-count">' + jobs.length + '</span>';
-      frag.appendChild(header);
-      
-      // Jobs in this category
-      jobs.forEach(function(j){
-        var row = buildRow(j);
-        frag.appendChild(row);
-        obs.observe(row);
-      });
-    }
     
     rowsEl.appendChild(frag);
 
     document.getElementById('countNote').textContent =
-      'Showing all ' + list.length + (list.length !== RAW.length ? (' (filtered from ' + RAW.length + ')') : '') + ' — sorted by urgency';
-  }
-
-  function reshuffle(){
-    state.order = shuffledIndices(RAW.length);
-    animatedRows = new WeakSet();
-    render();
+      'Showing ' + list.length + (list.length !== RAW.length ? (' out of ' + RAW.length) : ' positions') + ' • sort by filters';
   }
 
   function setSyncStatus(text, ok){
@@ -660,8 +606,6 @@
         var jobs = rowsToJobs(parseCSV(text));
         if(!jobs.length) throw new Error('No rows parsed');
         RAW = jobs;
-        state.order = shuffledIndices(RAW.length);
-        animatedRows = new WeakSet();
 
         document.getElementById('statTotal').textContent = RAW.length;
         var companies = uniqueSorted(RAW.map(function(j){ return j.c; }));
@@ -677,7 +621,6 @@
         console.warn('Sheet fetch failed, using fallback snapshot:', err);
         if(RAW.length === 0 && window.__FALLBACK_JOBS__){
           RAW = window.__FALLBACK_JOBS__;
-          state.order = shuffledIndices(RAW.length);
           document.getElementById('statTotal').textContent = RAW.length;
           var companies = uniqueSorted(RAW.map(function(j){ return j.c; }));
           document.getElementById('statCompanies').textContent = companies.length;
@@ -705,7 +648,9 @@
       document.getElementById('companySelect').value = '';
       render();
     });
-    document.getElementById('shuffleBtn').addEventListener('click', reshuffle);
+    document.getElementById('shuffleBtn').addEventListener('click', function(){
+      render();
+    });
     document.getElementById('refreshBtn').addEventListener('click', function(){ refreshData(false); });
 
     function tickClock(){
