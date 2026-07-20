@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Careerya — Just for Job Seekers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #101314;
+    --panel: #191d1f;
+    --panel-2: #1f2427;
+    --row-alt: #15191b;
+    --amber: #0052cc;
+    --amber-soft: #0066ff;
+    --amber-dim: #003d99;
+    --text: #eee9df;
+    --text-dim: #8b9296;
+    --text-faint: #565d61;
+    --border: #2a3033;
+    --green: #5fd68a;
+    --red: #e05c5c;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  
+  :root.light-mode {
+    --bg: #ffffff;
+    --panel: #f5f5f5;
+    --panel-2: #eeeeee;
+    --row-alt: #f9f9f9;
+    --text: #1a1a1a;
+    --text-dim: #555555;
+    --text-faint: #888888;
+    --border: #dddddd;
+  }
+  
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; transition: background-color 0.3s ease, color 0.3s ease; }
+  body {
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(0,82,204,0.06), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 100% 0%, rgba(95,214,138,0.04), transparent 55%);
+  }
+  :root.light-mode body {
+    background-image: none;
+    background-color: #ffffff;
+  }
+  a { color: inherit; }
+  ::selection { background: var(--amber-dim); color: var(--amber-soft); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .board-frame {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    box-shadow: 0 40px 80px -40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+    overflow: hidden;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  :root.light-mode .board-frame {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  header.hdr { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 26px; border-bottom: 1px solid var(--border); flex-wrap: wrap; transition: border-color 0.3s ease; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .logo-img {
+    width: 48px; height: 48px; border-radius: 6px;
+    flex: none;
+  }
+  .brand .titles h1 { margin: 0; font-family: var(--mono); font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: var(--text); }
+  .brand .titles p { margin: 2px 0 0; font-size: 11px; color: var(--text-dim); letter-spacing: 0.02em; font-weight: 500; }
+
+  .hdr-right { display: flex; align-items: center; gap: 22px; font-family: var(--mono); }
+  .stat { text-align: right; }
+  .stat .num { font-size: 22px; font-weight: 700; color: var(--amber); line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .lbl { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-top: 4px; }
+
+  .clock-box { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: rgba(0,0,0,0.25); transition: background-color 0.3s ease, border-color 0.3s ease; }
+  :root.light-mode .clock-box { background: rgba(0,0,0,0.05); }
+  .clock-box .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite; transition: background 0.3s ease; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .clock-box .time { font-size: 13px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+  .theme-toggle {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    font-family: var(--mono); font-size: 14px; padding: 6px 10px; border-radius: 5px;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .theme-toggle:hover { border-color: var(--amber-dim); color: var(--amber-soft); }
+
+  .sync-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 9px 26px; font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+    border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.15); letter-spacing: 0.03em; flex-wrap: wrap;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  :root.light-mode .sync-bar { background: rgba(0,0,0,0.03); }
+  .sync-bar .refresh-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .sync-bar .refresh-btn:hover { border-color: var(--amber-dim); color: var(--amber-soft); }
+
+  .controls { display: flex; gap: 10px; padding: 16px 26px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.18); flex-wrap: wrap; align-items: flex-end; transition: background-color 0.3s ease, border-color 0.3s ease; }
+  :root.light-mode .controls { background: rgba(0,0,0,0.02); }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); }
+  .search-field { flex: 1 1 260px; min-width: 200px; }
+
+  input[type="text"], select {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 6px; font-family: var(--sans); font-size: 13.5px; outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease, color 0.3s ease;
+  }
+  input[type="text"] { width: 100%; }
+  input[type="text"]:focus, select:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px rgba(0,82,204,0.1); }
+  input[type="text"]::placeholder { color: var(--text-faint); }
+  select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%238b9296'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; cursor: pointer; min-width: 150px;
+  }
+
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .btn-ghost:hover { border-color: var(--amber-dim); color: var(--amber-soft); }
+
+  .btn-amber {
+    background: var(--amber); border: 1px solid var(--amber); color: #ffffff;
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 16px; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-amber:hover { background: var(--amber-soft); transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgba(0,82,204,0.6); }
+
+  .col-hdr {
+    display: grid; grid-template-columns: 108px 1fr 190px 170px 100px; gap: 14px;
+    padding: 10px 26px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-faint); border-bottom: 1px solid var(--border);
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+
+  #rows { display: flex; flex-direction: column; }
+  .row {
+    display: grid; grid-template-columns: 108px 1fr 190px 170px 100px; gap: 14px; align-items: center;
+    padding: 13px 26px; border-bottom: 1px solid var(--border); transition: background 0.15s ease, border-color 0.3s ease;
+  }
+  .row:nth-child(odd) { background: var(--row-alt); }
+  .row:hover { background: rgba(0,82,204,0.045); }
+
+  .cell-time { font-family: var(--mono); font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .cell-time .day { display: block; font-size: 10px; color: var(--text-faint); margin-top: 2px; }
+
+  .cell-title { min-width: 0; }
+  .cell-title .t { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cell-title .new-tag {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: #1b2a1f;
+    background: var(--green); padding: 1px 5px; border-radius: 3px; margin-left: 8px; vertical-align: middle; font-weight: 700;
+  }
+
+  .cell-company { font-family: var(--mono); font-size: 12.5px; color: var(--amber-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cell-city { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .cell-apply { text-align: right; }
+  .apply-btn {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: #ffffff; background: var(--amber);
+    padding: 7px 12px; border-radius: 5px; text-decoration: none; font-weight: 700; white-space: nowrap;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  }
+  .apply-btn:hover { background: var(--amber-soft); transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgba(0,82,204,0.6); }
+
+  .ch { display: inline-block; }
+
+  .empty-state { padding: 70px 26px; text-align: center; color: var(--text-dim); }
+  .empty-state .big { font-family: var(--mono); font-size: 15px; color: var(--text); letter-spacing: 0.04em; margin-bottom: 6px; }
+  .empty-state .small { font-size: 13px; color: var(--text-faint); }
+
+  .board-footer { display: flex; align-items: center; justify-content: center; padding: 16px 26px; }
+  .count-note { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); letter-spacing: 0.03em; }
+
+  .credit { text-align: center; margin-top: 22px; font-family: var(--mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
+
+  @media (max-width: 760px) {
+    .col-hdr { display: none; }
+    .row { grid-template-columns: 1fr; gap: 6px; padding: 16px 18px; position: relative; }
+    .cell-time { order: 3; } .cell-title { order: 1; } .cell-company { order: 2; } .cell-city { order: 2; }
+    .cell-apply { order: 4; text-align: left; margin-top: 4px; }
+    .cell-company::before { content: "@ "; color: var(--text-faint); }
+    .cell-city::before { content: "📍 "; }
+    header.hdr { padding: 18px 18px; }
+    .controls { padding: 14px 18px; }
+    .sync-bar { padding: 9px 18px; }
+    .board-footer { padding: 14px 18px; }
+    .hdr-right { width: 100%; justify-content: space-between; }
+  }
+</style>
+
+<!-- Google AdSense: replace ca-pub-XXXXXXXXXXXXXXXX with your own publisher ID -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<style>
+  .ad-slot { display: flex; align-items: center; justify-content: center; min-height: 90px; margin: 0; padding: 10px 26px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.12); transition: background-color 0.3s ease, border-color 0.3s ease; }
+  :root.light-mode .ad-slot { background: rgba(0,0,0,0.03); }
+  .ad-slot .ad-label { position: absolute; margin-top: -22px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
+  .ad-slot ins.adsbygoogle { width: 100%; }
+  @media (max-width: 760px) { .ad-slot { padding: 10px 18px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="board-frame">
+    <header class="hdr">
+      <div class="brand">
+        <svg class="logo-img" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Blue circle background -->
+          <circle cx="150" cy="150" r="140" fill="#0052cc"/>
+          
+          <!-- White spiral/aperture shape -->
+          <g fill="#ffffff" opacity="0.95">
+            <!-- Top right segment -->
+            <path d="M 150 30 Q 210 80 220 150 Q 215 100 180 60 Q 170 45 150 30 Z"/>
+            <!-- Right segment -->
+            <path d="M 240 130 Q 260 180 240 220 Q 230 190 210 160 Q 200 140 240 130 Z"/>
+            <!-- Bottom segment -->
+            <path d="M 180 240 Q 130 260 80 250 Q 120 240 160 220 Q 175 210 180 240 Z"/>
+            <!-- Left segment -->
+            <path d="M 60 170 Q 40 130 60 90 Q 80 120 110 150 Q 120 160 60 170 Z"/>
+            <!-- Center top-left arc -->
+            <path d="M 130 80 Q 100 110 95 150 Q 110 120 140 100 Q 145 85 130 80 Z"/>
+          </g>
+        </svg>
+        <div class="titles">
+          <h1>CAREERYA</h1>
+          <p>just for job seekers</p>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Positions</div></div>
+        <div class="stat"><div class="num" id="statCompanies">0</div><div class="lbl">Companies</div></div>
+        <div class="clock-box"><span class="dot"></span><span class="time" id="clock">--:--:--</span></div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+      </div>
+    </header>
+
+    <div class="sync-bar">
+      <span id="syncStatus">Connecting…</span>
+      <button class="refresh-btn" id="refreshBtn">↻ Refresh now</button>
+    </div>
+
+    <div class="controls">
+      <div class="field search-field">
+        <label for="searchInput">Search role or company</label>
+        <input type="text" id="searchInput" placeholder="e.g. software engineer, Nvidia, product manager…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="citySelect">City</label>
+        <select id="citySelect"><option value="">All cities</option></select>
+      </div>
+      <div class="field">
+        <label for="companySelect">Company</label>
+        <select id="companySelect"><option value="">All companies</option></select>
+      </div>
+      <button class="btn-ghost" id="clearBtn">Clear filters</button>
+      <button class="btn-amber" id="shuffleBtn">⟲ Shuffle</button>
+    </div>
+
+    <div class="ad-slot">
+      <span class="ad-label">Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="1111111111"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="col-hdr">
+      <span>Posted</span><span>Role</span><span>Company</span><span>City</span><span style="text-align:right">Apply</span>
+    </div>
+
+    <div id="rows"></div>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <div class="big">No positions match those filters</div>
+      <div class="small">Try a broader search or clear filters above</div>
+    </div>
+
+    <div class="ad-slot" style="border-top: 1px solid var(--border); border-bottom: none;">
+      <span class="ad-label">Advertisement</span>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="2222222222"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="board-footer"><span class="count-note" id="countNote">Loading…</span></div>
+  </div>
+
+  <div class="credit">Synced live from your Google Sheet · reshuffles every visit · click any role to apply</div>
+</div>
+
+<script>window.__FALLBACK_JOBS__ = [{"t":"Account Executive, IT/ITES & Automotive, Pune","c":"Postman","l":"India","city":"India","u":"https://job-boards.greenhouse.io/postman/jobs/7748732003","d":"2024-06-15T10:30:00"},{"t":"Senior Software Engineer - Backend","c":"TCS","l":"Bangalore, India","city":"Bangalore","u":"https://www.tcs.com/careers","d":"2024-06-20T14:15:00"}];
+</script>
+<script>(function(){
+  // ========== Dark Mode Setup ==========
+  var darkMode = localStorage.getItem('darkMode') === 'false' ? false : true;
+  function applyTheme(){
+    if(darkMode){
+      document.documentElement.classList.remove('light-mode');
+      document.getElementById('themeToggle').textContent = '🌙';
+    } else {
+      document.documentElement.classList.add('light-mode');
+      document.getElementById('themeToggle').textContent = '☀️';
+    }
+  }
+  applyTheme();
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    darkMode = !darkMode;
+    localStorage.setItem('darkMode', darkMode);
+    applyTheme();
+  });
+
+  var SHEET_ID = '1O3rfk4W9wvObjerHe6Qm7Yjxcw1LZtRUSXbW4rVW1J4';
+  var GID = '1409451670';
+  var CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID;
+  var REFRESH_MS = 5 * 60 * 1000; // auto re-fetch every 5 minutes
+
+  var RAW = [];              // full job list, current source of truth
+  var state = { q: '', city: '', company: '', order: [] };
+  var animatedRows = new WeakSet();
+  var FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  // ---------- CSV parsing (RFC4180-ish, handles quoted commas/newlines) ----------
+  function parseCSV(text){
+    var rows = [];
+    var row = [];
+    var field = '';
+    var inQuotes = false;
+    for(var i = 0; i < text.length; i++){
+      var c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i++; }
+          else { inQuotes = false; }
+        } else {
+          field += c;
+        }
+      } else {
+        if(c === '"'){ inQuotes = true; }
+        else if(c === ','){ row.push(field); field = ''; }
+        else if(c === '\r'){ /* skip */ }
+        else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+        else { field += c; }
+      }
+    }
+    if(field.length || row.length){ row.push(field); rows.push(row); }
+    return rows.filter(function(r){ return r.length > 1 || (r[0] && r[0].trim() !== ''); });
+  }
+
+  function primaryCity(loc){
+    if(!loc) return 'Unknown';
+    if (loc.indexOf('Locations') !== -1) return 'Multiple';
+    var first = loc.split(',')[0].trim();
+    first = first.replace(/\s*\d{5,6}$/, '');
+    return first || loc;
+  }
+
+  function parseAddedDate(s){
+    // format DD/MM/YYYY HH:MM:SS
+    if(!s) return '';
+    var m = s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})[ T](\d{2}):(\d{2}):(\d{2})/);
+    if(!m) return '';
+    var iso = m[3] + '-' + m[2] + '-' + m[1] + 'T' + m[4] + ':' + m[5] + ':' + m[6];
+    return iso;
+  }
+
+  function rowsToJobs(rows){
+    if(!rows.length) return [];
+    var header = rows[0].map(function(h){ return h.trim().toLowerCase(); });
+    var idxTitle = header.indexOf('title');
+    var idxCompany = header.indexOf('company');
+    var idxLocation = header.indexOf('location');
+    var idxLink = header.indexOf('application link');
+    var idxAdded = header.indexOf('added time');
+
+    var out = [];
+    for(var i = 1; i < rows.length; i++){
+      var r = rows[i];
+      var title = (r[idxTitle] || '').trim();
+      var company = (r[idxCompany] || '').trim();
+      var location = (r[idxLocation] || '').trim();
+      var link = (r[idxLink] || '').trim();
+      var added = (r[idxAdded] || '').trim();
+      if(!title || !link || link.indexOf('http') !== 0) continue;
+      out.push({
+        t: title, c: company, l: location,
+        city: primaryCity(location),
+        u: link,
+        d: parseAddedDate(added)
+      });
+    }
+    return out;
+  }
+
+  function shuffledIndices(n){
+    var arr = [];
+    for(var i = 0; i < n; i++) arr.push(i);
+    for(var i = n - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function uniqueSorted(arr){
+    var seen = {}, out = [];
+    arr.forEach(function(v){ if(v && !seen[v]){ seen[v]=true; out.push(v);} });
+    out.sort(function(a,b){ return a.localeCompare(b); });
+    return out;
+  }
+
+  function populateSelect(sel, values, currentVal){
+    var existing = {};
+    Array.prototype.forEach.call(sel.options, function(o){ existing[o.value] = true; });
+    values.forEach(function(v){
+      if(!existing[v]){
+        var opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        sel.appendChild(opt);
+      }
+    });
+    if(currentVal) sel.value = currentVal;
+  }
+
+  function timeAgo(iso){
+    if(!iso) return { rel: '—', day: '', isNew:false };
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return { rel: '—', day: '', isNew:false };
+    var now = new Date();
+    var diffH = (now - d) / 36e5;
+    var rel;
+    if (diffH < 1) rel = Math.max(1, Math.round(diffH*60)) + 'm ago';
+    else if (diffH < 24) rel = Math.round(diffH) + 'h ago';
+    else rel = Math.round(diffH/24) + 'd ago';
+    var day = d.toLocaleDateString(undefined, {day:'2-digit', month:'short'});
+    return { rel: rel, day: day, isNew: diffH >= 0 && diffH < 48 };
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function applyFilters(){
+    var q = state.q.trim().toLowerCase();
+    var order = state.order.length === RAW.length ? state.order : shuffledIndices(RAW.length);
+    state.order = order;
+    var ordered = order.map(function(idx){ return RAW[idx]; });
+    return ordered.filter(function(j){
+      if(state.city && j.city !== state.city) return false;
+      if(state.company && j.c !== state.company) return false;
+      if(q){
+        var hay = (j.t + ' ' + j.c + ' ' + j.l).toLowerCase();
+        if(hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function animateFlap(el, finalText){
+    var duration = 260, frames = 6;
+    var chars = finalText.split('');
+    el.innerHTML = '';
+    var spans = chars.map(function(c){
+      var span = document.createElement('span');
+      span.className = 'ch';
+      span.textContent = c === ' ' ? '\u00A0' : c;
+      el.appendChild(span);
+      return span;
+    });
+    chars.forEach(function(finalChar, i){
+      if(finalChar === ' ') return;
+      var span = spans[i], step = 0;
+      var iv = setInterval(function(){
+        if(step >= frames){ span.textContent = finalChar; clearInterval(iv); return; }
+        span.textContent = FLAP_CHARS[Math.floor(Math.random()*FLAP_CHARS.length)];
+        step++;
+      }, duration/frames);
+    });
+  }
+
+  var observer = null;
+  function getObserver(){
+    if(observer) return observer;
+    observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var row = entry.target;
+          if(!animatedRows.has(row)){
+            animatedRows.add(row);
+            var titleEl = row.querySelector('.t');
+            var companyEl = row.querySelector('.cell-company');
+            if(titleEl) animateFlap(titleEl, titleEl.dataset.final);
+            if(companyEl) animateFlap(companyEl, companyEl.dataset.final);
+          }
+          observer.unobserve(row);
+        }
+      });
+    }, { rootMargin: '80px 0px' });
+    return observer;
+  }
+
+  function buildRow(j){
+    var ta = timeAgo(j.d);
+    var row = document.createElement('div');
+    row.className = 'row';
+
+    var cTime = document.createElement('div');
+    cTime.className = 'cell-time';
+    cTime.innerHTML = escapeHtml(ta.rel) + '<span class="day">' + escapeHtml(ta.day) + '</span>';
+
+    var cTitle = document.createElement('div');
+    cTitle.className = 'cell-title';
+    var titleInner = document.createElement('span');
+    titleInner.className = 't';
+    titleInner.dataset.final = j.t;
+    titleInner.textContent = j.t;
+    cTitle.appendChild(titleInner);
+    if(ta.isNew){
+      var tag = document.createElement('span');
+      tag.className = 'new-tag';
+      tag.textContent = 'NEW';
+      cTitle.appendChild(tag);
+    }
+
+    var cCompany = document.createElement('div');
+    cCompany.className = 'cell-company';
+    cCompany.dataset.final = j.c;
+    cCompany.textContent = j.c;
+
+    var cCity = document.createElement('div');
+    cCity.className = 'cell-city';
+    cCity.textContent = j.l;
+
+    var cApply = document.createElement('div');
+    cApply.className = 'cell-apply';
+    var a = document.createElement('a');
+    a.className = 'apply-btn';
+    a.href = j.u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.textContent = 'Apply →';
+    cApply.appendChild(a);
+
+    row.appendChild(cTime);
+    row.appendChild(cTitle);
+    row.appendChild(cCompany);
+    row.appendChild(cCity);
+    row.appendChild(cApply);
+    return row;
+  }
+
+  function render(){
+    var list = applyFilters();
+    var rowsEl = document.getElementById('rows');
+    rowsEl.innerHTML = '';
+    document.getElementById('emptyState').style.display = list.length === 0 ? 'block' : 'none';
+
+    var frag = document.createDocumentFragment();
+    var obs = getObserver();
+    list.forEach(function(j){
+      var row = buildRow(j);
+      frag.appendChild(row);
+      obs.observe(row);
+    });
+    rowsEl.appendChild(frag);
+
+    document.getElementById('countNote').textContent =
+      'Showing all ' + list.length + (list.length !== RAW.length ? (' (filtered from ' + RAW.length + ')') : '') + ' — shuffled';
+  }
+
+  function reshuffle(){
+    state.order = shuffledIndices(RAW.length);
+    animatedRows = new WeakSet();
+    render();
+  }
+
+  function setSyncStatus(text, ok){
+    var el = document.getElementById('syncStatus');
+    el.textContent = text;
+    var dot = document.querySelector('.clock-box .dot');
+    if(dot) dot.style.background = ok ? 'var(--green)' : '#e05c5c';
+    if(dot) dot.style.boxShadow = ok ? '0 0 8px var(--green)' : '0 0 8px #e05c5c';
+  }
+
+  function refreshData(isInitial){
+    setSyncStatus(isInitial ? 'Loading sheet…' : 'Syncing…', true);
+    var bustUrl = CSV_URL + '&_ts=' + Date.now();
+    fetch(bustUrl, { cache: 'no-store' })
+      .then(function(res){
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function(text){
+        var jobs = rowsToJobs(parseCSV(text));
+        if(!jobs.length) throw new Error('No rows parsed');
+        RAW = jobs;
+        state.order = shuffledIndices(RAW.length);
+        animatedRows = new WeakSet();
+
+        document.getElementById('statTotal').textContent = RAW.length;
+        var companies = uniqueSorted(RAW.map(function(j){ return j.c; }));
+        document.getElementById('statCompanies').textContent = companies.length;
+        populateSelect(document.getElementById('citySelect'), uniqueSorted(RAW.map(function(j){ return j.city; })), state.city);
+        populateSelect(document.getElementById('companySelect'), companies, state.company);
+
+        render();
+        var now = new Date();
+        setSyncStatus('Live · synced ' + now.toLocaleTimeString(), true);
+      })
+      .catch(function(err){
+        console.warn('Sheet fetch failed, using fallback snapshot:', err);
+        if(RAW.length === 0 && window.__FALLBACK_JOBS__){
+          RAW = window.__FALLBACK_JOBS__;
+          state.order = shuffledIndices(RAW.length);
+          document.getElementById('statTotal').textContent = RAW.length;
+          var companies = uniqueSorted(RAW.map(function(j){ return j.c; }));
+          document.getElementById('statCompanies').textContent = companies.length;
+          populateSelect(document.getElementById('citySelect'), uniqueSorted(RAW.map(function(j){ return j.city; })));
+          populateSelect(document.getElementById('companySelect'), companies);
+          render();
+        }
+        setSyncStatus('Offline snapshot · live sync failed', false);
+      });
+  }
+
+  function init(){
+    var searchInput = document.getElementById('searchInput');
+    var debTimer;
+    searchInput.addEventListener('input', function(){
+      clearTimeout(debTimer);
+      debTimer = setTimeout(function(){ state.q = searchInput.value; render(); }, 180);
+    });
+    document.getElementById('citySelect').addEventListener('change', function(e){ state.city = e.target.value; render(); });
+    document.getElementById('companySelect').addEventListener('change', function(e){ state.company = e.target.value; render(); });
+    document.getElementById('clearBtn').addEventListener('click', function(){
+      state.q=''; state.city=''; state.company='';
+      searchInput.value = '';
+      document.getElementById('citySelect').value = '';
+      document.getElementById('companySelect').value = '';
+      render();
+    });
+    document.getElementById('shuffleBtn').addEventListener('click', reshuffle);
+    document.getElementById('refreshBtn').addEventListener('click', function(){ refreshData(false); });
+
+    function tickClock(){
+      var now = new Date();
+      var hh = String(now.getHours()).padStart(2,'0');
+      var mm = String(now.getMinutes()).padStart(2,'0');
+      var ss = String(now.getSeconds()).padStart(2,'0');
+      document.getElementById('clock').textContent = hh+':'+mm+':'+ss;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    refreshData(true);
+    setInterval(function(){ refreshData(false); }, REFRESH_MS);
+
+    // Render AdSense units (safe no-op if adsbygoogle.js hasn't loaded, e.g. ad blocker)
+    try {
+      document.querySelectorAll('ins.adsbygoogle').forEach(function(){
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      });
+    } catch (e) { console.warn('AdSense not loaded:', e); }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
