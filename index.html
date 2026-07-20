@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  <link rel="stylesheet" href="pagination.css">
   :root{
     --bg: #101314;
     --panel: #191d1f;
@@ -298,12 +297,7 @@
            data-full-width-responsive="true"></ins>
     </div>
 
-        <div class="board-footer">
-      <span class="count-note" id="countNote">Loading…</span>
-      <div class="pagination" id="pagination" style="display: none;">
-        <button id="viewAllBtn" class="view-all-btn">View All Jobs</button>
-      </div>
-    </div>
+    <div class="board-footer"><span class="count-note" id="countNote">Loading…</span></div>
   </div>
 
   <div class="credit">Synced live from your Google Sheet · reshuffles every visit · click any role to apply</div>
@@ -311,7 +305,6 @@
 
 <script src="job-categories.js"></script>
 <script>(function(){
-  
   // ========== Dark Mode Setup ==========
   var darkMode = localStorage.getItem('darkMode') === 'false' ? false : true;
   function applyTheme(){
