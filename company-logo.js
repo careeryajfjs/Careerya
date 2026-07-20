@@ -1,13 +1,10 @@
 // company-logo.js
-function addCompanyLogoToRow(row, companyName) {
-  // This function can be called from buildRow if needed
-}
+(function() {
+  const originalBuildRow = buildRow;
 
-function enhanceBuildRow(originalBuildRow) {
-  return function(j) {
+  buildRow = function(j) {
     var row = originalBuildRow(j);
 
-    // Find the company cell and add logo
     var companyCell = row.querySelector('.cell-company');
     if (companyCell) {
       companyCell.style.display = 'flex';
@@ -21,11 +18,11 @@ function enhanceBuildRow(originalBuildRow) {
       logo.style.objectFit = 'contain';
       logo.style.flexShrink = '0';
 
-      var name = (j.c || '').trim();
-      logo.src = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(name)}.com`;
+      var companyName = (j.c || '').trim();
+      logo.src = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(companyName)}.com`;
       
       logo.onerror = function() {
-        logo.src = `https://logo.clearbit.com/${encodeURIComponent(name)}.com?size=64`;
+        logo.src = `https://logo.clearbit.com/${encodeURIComponent(companyName)}.com?size=64`;
         logo.onerror = function() { logo.style.display = 'none'; };
       };
 
@@ -34,10 +31,4 @@ function enhanceBuildRow(originalBuildRow) {
 
     return row;
   };
-}
-
-// Auto apply when loaded
-if (typeof buildRow !== 'undefined') {
-  const originalBuildRow = buildRow;
-  buildRow = enhanceBuildRow(originalBuildRow);
-}
+})();
