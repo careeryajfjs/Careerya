@@ -1,5 +1,7 @@
 // company-logo.js
 (function() {
+  if (typeof buildRow === 'undefined') return;
+
   const originalBuildRow = buildRow;
 
   buildRow = function(j) {
@@ -16,7 +18,6 @@
       logo.style.height = '28px';
       logo.style.borderRadius = '6px';
       logo.style.objectFit = 'contain';
-      logo.style.flexShrink = '0';
 
       var companyName = (j.c || '').trim();
       logo.src = `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(companyName)}.com`;
