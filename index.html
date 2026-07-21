@@ -17,8 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="pagination.css">
-  <style>
+<style>
   :root{
     --bg: #101314;
     --panel: #191d1f;
@@ -277,14 +276,7 @@
   .empty-state .big { font-family: var(--mono); font-size: 15px; color: var(--text); letter-spacing: 0.04em; margin-bottom: 6px; }
   .empty-state .small { font-size: 13px; color: var(--text-faint); }
 
-  .board-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px 26px;
-  flex-wrap: wrap;
-}
+  .board-footer { display: flex; align-items: center; justify-content: center; padding: 16px 26px; }
   .count-note { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); letter-spacing: 0.03em; }
 
   .credit { text-align: center; margin-top: 22px; font-family: var(--mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
@@ -411,22 +403,16 @@
            data-ad-slot="2222222222"
            data-ad-format="auto"
            data-full-width-responsive="true"></ins>
-    <div class="board-footer">
-  <span class="count-note" id="countNote">Loading…</span>
+    </div>
 
-  <div id="pagination" class="pagination">
-    <button id="viewAllBtn" class="view-all-btn">
-      View More
-    </button>
+    <div class="board-footer"><span class="count-note" id="countNote">Loading…</span></div>
   </div>
-</div>
 
   <div class="credit">Synced live from your Google Sheet · reshuffles every visit · click any role to apply</div>
 </div>
 
 <script src="job-categories.js"></script>
-<script src="company-logo.js"></script>
-<script src="pagination.js"></script>
+  <script src="company-logo.js"></script>
 <script>(function(){
   // ========== Dark Mode Setup ==========
   var darkMode = localStorage.getItem('darkMode') === 'false' ? false : true;
@@ -683,8 +669,32 @@
   }
 
   function render(){
-  renderWithPagination();
-}
+    var list = applyFilters();
+    var rowsEl = document.getElementById('rows');
+    rowsEl.innerHTML = '';
+    document.getElementById('emptyState').style.display = list.length === 0 ? 'block' : 'none';
+
+    if(list.length === 0){
+      document.getElementById('countNote').textContent = 'No positions match those filters';
+      return;
+    }
+
+    var frag = document.createDocumentFragment();
+    var obs = getObserver();
+    
+    // Render jobs in original order (no sorting)
+    list.forEach(function(j){
+      var row = buildRow(j);
+      frag.appendChild(row);
+      obs.observe(row);
+    });
+    
+    rowsEl.appendChild(frag);
+
+    document.getElementById('countNote').textContent =
+      'Showing ' + list.length + (list.length !== RAW.length ? (' out of ' + RAW.length) : ' positions') + ' • sort by filters';
+  }
+
   function setSyncStatus(text, ok){
     var el = document.getElementById('syncStatus');
     el.textContent = text;
