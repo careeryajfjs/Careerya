@@ -440,6 +440,9 @@
 
   var RAW = [];              // full job list, current source of truth
   var state = { q: '', city: '', company: '' };
+  var RAW = [];              // full job list, current source of truth
+  var state = { q: '', city: '', company: '' };
+  var animatedRows = new WeakSet();
   var animatedRows = new WeakSet();
   var FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -669,31 +672,40 @@
     return row;
   }
 
-  function render(){
-    var list = applyFilters();
+ function render(){
+    var filtered = applyFilters();
+    var list = filtered.slice(0, visibleCount);
     var rowsEl = document.getElementById('rows');
     rowsEl.innerHTML = '';
-    document.getElementById('emptyState').style.display = list.length === 0 ? 'block' : 'none';
+    document.getElementById('emptyState').style.display = filtered.length === 0 ? 'block' : 'none';
+    var paginationEl = document.getElementById('pagination');
 
-    if(list.length === 0){
+    if(filtered.length === 0){
       document.getElementById('countNote').textContent = 'No positions match those filters';
+      paginationEl.style.display = 'none';
       return;
     }
 
     var frag = document.createDocumentFragment();
     var obs = getObserver();
-    
+
     // Render jobs in original order (no sorting)
     list.forEach(function(j){
       var row = buildRow(j);
       frag.appendChild(row);
       obs.observe(row);
     });
-    
+
     rowsEl.appendChild(frag);
 
-    document.getElementById('countNote').textContent =
-      'Showing ' + list.length + (list.length !== RAW.length ? (' out of ' + RAW.length) : ' positions') + ' • sort by filters';
+    if(filtered.length > visibleCount){
+      document.getElementById('countNote').textContent = 'Showing ' + list.length + ' of ' + filtered.length + ' positions';
+      paginationEl.style.display = 'flex';
+    } else {
+      document.getElementById('countNote').textContent =
+        'Showing ' + filtered.length + (filtered.length !== RAW.length ? (' out of ' + RAW.length) : ' positions');
+      paginationEl.style.display = 'none';
+    }
   }
 
   function setSyncStatus(text, ok){
@@ -742,22 +754,29 @@
       });
   }
 
-  function init(){
+ function init(){
     var searchInput = document.getElementById('searchInput');
     var debTimer;
     searchInput.addEventListener('input', function(){
       clearTimeout(debTimer);
-      debTimer = setTimeout(function(){ state.q = searchInput.value; render(); }, 180);
+      debTimer = setTimeout(function(){ state.q = searchInput.value; visibleCount = PAGE_SIZE; render(); }, 180);
     });
-    document.getElementById('citySelect').addEventListener('change', function(e){ state.city = e.target.value; render(); });
-    document.getElementById('companySelect').addEventListener('change', function(e){ state.company = e.target.value; render(); });
+    document.getElementById('citySelect').addEventListener('change', function(e){ state.city = e.target.value; visibleCount = PAGE_SIZE; render(); });
+    document.getElementById('companySelect').addEventListener('change', function(e){ state.company = e.target.value; visibleCount = PAGE_SIZE; render(); });
     document.getElementById('clearBtn').addEventListener('click', function(){
-      state.q=''; state.city=''; state.company='';
+      state.q=''; state.city=''; state.company=''; visibleCount = PAGE_SIZE;
       searchInput.value = '';
       document.getElementById('citySelect').value = '';
       document.getElementById('companySelect').value = '';
       render();
     });
+
+    document.getElementById('viewMoreBtn').addEventListener('click', function(){
+      visibleCount += PAGE_SIZE;
+      render();
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', function(){ refreshData(false); });
     
     document.getElementById('refreshBtn').addEventListener('click', function(){ refreshData(false); });
 
