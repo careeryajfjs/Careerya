@@ -2,102 +2,104 @@
 (function() {
   const PAGE_SIZE = 99;
 
-  // Make pagination state available globally
   window.paginationState = {
     visibleCount: PAGE_SIZE,
     PAGE_SIZE: PAGE_SIZE
   };
 
-  // Enhanced render function
-  window.enhancedRender = function(originalRender) {
-    return function() {
+  // This function will be called by the main HTML render()
+  window.renderWithPagination = function() {
 
-      var filtered = applyFilters();
+    var filtered = applyFilters();
 
-      // Show only the current number of visible jobs
-      var displayList = filtered.slice(
-        0,
-        window.paginationState.visibleCount
-      );
+    // Show only the number of jobs currently allowed
+    var displayList = filtered.slice(
+      0,
+      window.paginationState.visibleCount
+    );
 
-      var rowsEl = document.getElementById('rows');
-      rowsEl.innerHTML = '';
+    var rowsEl = document.getElementById('rows');
+    var emptyState = document.getElementById('emptyState');
+    var countNote = document.getElementById('countNote');
+    var paginationEl = document.getElementById('pagination');
 
-      document.getElementById('emptyState').style.display =
-        filtered.length === 0 ? 'block' : 'none';
+    rowsEl.innerHTML = '';
 
-      if (filtered.length === 0) {
-        document.getElementById('countNote').textContent =
-          'No positions match those filters';
+    // No results
+    if (filtered.length === 0) {
+      emptyState.style.display = 'block';
+      countNote.textContent = 'No positions match those filters';
+      paginationEl.style.display = 'none';
+      return;
+    }
 
-        document.getElementById('pagination').style.display = 'none';
-        return;
-      }
+    emptyState.style.display = 'none';
 
-      var frag = document.createDocumentFragment();
-      var obs = getObserver();
+    // Create job rows
+    var frag = document.createDocumentFragment();
+    var obs = getObserver();
 
-      displayList.forEach(function(j) {
-        var row = buildRow(j);
-        frag.appendChild(row);
-        obs.observe(row);
-      });
+    displayList.forEach(function(j) {
+      var row = buildRow(j);
+      frag.appendChild(row);
+      obs.observe(row);
+    });
 
-      rowsEl.appendChild(frag);
+    rowsEl.appendChild(frag);
 
-      // Update count
-      var countNote = document.getElementById('countNote');
-      var paginationEl = document.getElementById('pagination');
+    // Update count
+    var showingCount = Math.min(
+      window.paginationState.visibleCount,
+      filtered.length
+    );
 
-      var showingCount = Math.min(
-        window.paginationState.visibleCount,
-        filtered.length
-      );
+    countNote.textContent =
+      'Showing ' + showingCount +
+      ' of ' + filtered.length + ' positions';
 
-      countNote.textContent =
-        'Showing ' + showingCount + ' of ' + filtered.length + ' positions';
-
-      // Show View More button if more jobs are available
-      if (showingCount < filtered.length) {
-        paginationEl.style.display = 'flex';
-      } else {
-        paginationEl.style.display = 'none';
-      }
-    };
+    // Show View More only when more jobs exist
+    if (showingCount < filtered.length) {
+      paginationEl.style.display = 'flex';
+    } else {
+      paginationEl.style.display = 'none';
+    }
   };
 
-  // View More handler
+  // Initialize View More button
   function initPagination() {
 
     var viewAllBtn = document.getElementById('viewAllBtn');
 
-    if (viewAllBtn) {
+    if (!viewAllBtn) return;
 
-      // Change button text
-      viewAllBtn.textContent = 'View More';
+    viewAllBtn.textContent = 'View More';
 
-      viewAllBtn.addEventListener('click', function() {
+    viewAllBtn.addEventListener('click', function() {
 
-        // Add another 99 jobs
-        window.paginationState.visibleCount +=
-          window.paginationState.PAGE_SIZE;
+      // Add another 99 jobs
+      window.paginationState.visibleCount +=
+        window.paginationState.PAGE_SIZE;
 
-        // Re-render jobs
-        render();
+      // Render again
+      render();
 
-        // Scroll slightly to where new jobs appear
-        setTimeout(function() {
+      // Scroll to pagination area
+      setTimeout(function() {
+        var paginationEl =
+          document.getElementById('pagination');
+
+        if (paginationEl) {
           window.scrollTo({
-            top: document.getElementById('pagination').offsetTop - 200,
+            top: paginationEl.offsetTop - 200,
             behavior: 'smooth'
           });
-        }, 100);
+        }
+      }, 100);
 
-      });
-    }
+    });
   }
 
-  // Auto-init
+  // Auto initialize
   if (document.readyState === 'loading') {
     document.addEventListener(
       'DOMContentLoaded',
