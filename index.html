@@ -370,7 +370,7 @@
         <select id="companySelect"><option value="">All companies</option></select>
       </div>
       <button class="btn-ghost" id="clearBtn">Clear filters</button>
-      <button class="btn-amber" id="shuffleBtn">⟲ Shuffle</button>
+      
     </div>
 
     <!-- Ad slot 1 - Hidden for now -->
@@ -757,9 +757,7 @@
       document.getElementById('companySelect').value = '';
       render();
     });
-    document.getElementById('shuffleBtn').addEventListener('click', function(){
-      render();
-    });
+    
     document.getElementById('refreshBtn').addEventListener('click', function(){ refreshData(false); });
 
     function tickClock(){
