@@ -683,8 +683,11 @@
   }
 
   function render(){
-  resetPagination();
-  renderWithPagination();
+  if (window.renderWithPagination) {
+    window.renderWithPagination();
+  } else {
+    renderWithPagination();
+  }
 }
   function setSyncStatus(text, ok){
     var el = document.getElementById('syncStatus');
