@@ -2,65 +2,109 @@
 (function() {
   const PAGE_SIZE = 99;
 
-  // Make these available globally so your main script can use them
+  // Make pagination state available globally
   window.paginationState = {
-    showAll: false,
+    visibleCount: PAGE_SIZE,
     PAGE_SIZE: PAGE_SIZE
   };
 
-  // Enhanced render function (we'll call this from main script)
+  // Enhanced render function
   window.enhancedRender = function(originalRender) {
     return function() {
-      var filtered = applyFilters(); // uses your existing applyFilters()
-      var displayList = window.paginationState.showAll ? filtered : filtered.slice(0, PAGE_SIZE);
-      
+
+      var filtered = applyFilters();
+
+      // Show only the current number of visible jobs
+      var displayList = filtered.slice(
+        0,
+        window.paginationState.visibleCount
+      );
+
       var rowsEl = document.getElementById('rows');
       rowsEl.innerHTML = '';
-      document.getElementById('emptyState').style.display = filtered.length === 0 ? 'block' : 'none';
+
+      document.getElementById('emptyState').style.display =
+        filtered.length === 0 ? 'block' : 'none';
+
+      if (filtered.length === 0) {
+        document.getElementById('countNote').textContent =
+          'No positions match those filters';
+
+        document.getElementById('pagination').style.display = 'none';
+        return;
+      }
 
       var frag = document.createDocumentFragment();
       var obs = getObserver();
-      displayList.forEach(function(j){
+
+      displayList.forEach(function(j) {
         var row = buildRow(j);
         frag.appendChild(row);
         obs.observe(row);
       });
+
       rowsEl.appendChild(frag);
 
-      // Pagination UI
+      // Update count
       var countNote = document.getElementById('countNote');
       var paginationEl = document.getElementById('pagination');
-      
-      if (filtered.length > PAGE_SIZE && !window.paginationState.showAll) {
-        countNote.textContent = 'Showing ' + PAGE_SIZE + ' of ' + filtered.length + ' positions — shuffled';
+
+      var showingCount = Math.min(
+        window.paginationState.visibleCount,
+        filtered.length
+      );
+
+      countNote.textContent =
+        'Showing ' + showingCount + ' of ' + filtered.length + ' positions';
+
+      // Show View More button if more jobs are available
+      if (showingCount < filtered.length) {
         paginationEl.style.display = 'flex';
       } else {
-        countNote.textContent = 'Showing all ' + filtered.length + 
-          (filtered.length !== RAW.length ? (' (filtered from ' + RAW.length + ')') : '') + ' — shuffled';
         paginationEl.style.display = 'none';
       }
     };
   };
 
-  // View All handler
+  // View More handler
   function initPagination() {
-    const viewAllBtn = document.getElementById('viewAllBtn');
+
+    var viewAllBtn = document.getElementById('viewAllBtn');
+
     if (viewAllBtn) {
-      viewAllBtn.addEventListener('click', function(){
-        window.paginationState.showAll = true;
-        render(); // calls your main render (which we'll override)
+
+      // Change button text
+      viewAllBtn.textContent = 'View More';
+
+      viewAllBtn.addEventListener('click', function() {
+
+        // Add another 99 jobs
+        window.paginationState.visibleCount +=
+          window.paginationState.PAGE_SIZE;
+
+        // Re-render jobs
+        render();
+
+        // Scroll slightly to where new jobs appear
+        setTimeout(function() {
+          window.scrollTo({
+            top: document.getElementById('pagination').offsetTop - 200,
+            behavior: 'smooth'
+          });
+        }, 100);
+
       });
     }
-
-    // Reset pagination when filters change
-    const originalClear = document.getElementById('clearBtn').onclick;
-    // We'll hook into existing listeners later
   }
 
-  // Auto-init when loaded
+  // Auto-init
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPagination);
+    document.addEventListener(
+      'DOMContentLoaded',
+      initPagination
+    );
   } else {
     initPagination();
   }
+
 })();
