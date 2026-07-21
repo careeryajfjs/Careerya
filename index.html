@@ -276,7 +276,14 @@
   .empty-state .big { font-family: var(--mono); font-size: 15px; color: var(--text); letter-spacing: 0.04em; margin-bottom: 6px; }
   .empty-state .small { font-size: 13px; color: var(--text-faint); }
 
-  .board-footer { display: flex; align-items: center; justify-content: center; padding: 16px 26px; }
+  .board-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 26px;
+  flex-wrap: wrap;
+}
   .count-note { font-family: var(--mono); font-size: 11.5px; color: var(--text-faint); letter-spacing: 0.03em; }
 
   .credit { text-align: center; margin-top: 22px; font-family: var(--mono); font-size: 11px; color: var(--text-faint); letter-spacing: 0.04em; }
@@ -417,7 +424,8 @@
 </div>
 
 <script src="job-categories.js"></script>
-  <script src="company-logo.js"></script>
+<script src="company-logo.js"></script>
+<script src="pagination.js"></script>
 <script>(function(){
   // ========== Dark Mode Setup ==========
   var darkMode = localStorage.getItem('darkMode') === 'false' ? false : true;
@@ -674,32 +682,9 @@
   }
 
   function render(){
-    var list = applyFilters();
-    var rowsEl = document.getElementById('rows');
-    rowsEl.innerHTML = '';
-    document.getElementById('emptyState').style.display = list.length === 0 ? 'block' : 'none';
-
-    if(list.length === 0){
-      document.getElementById('countNote').textContent = 'No positions match those filters';
-      return;
-    }
-
-    var frag = document.createDocumentFragment();
-    var obs = getObserver();
-    
-    // Render jobs in original order (no sorting)
-    list.forEach(function(j){
-      var row = buildRow(j);
-      frag.appendChild(row);
-      obs.observe(row);
-    });
-    
-    rowsEl.appendChild(frag);
-
-    document.getElementById('countNote').textContent =
-      'Showing ' + list.length + (list.length !== RAW.length ? (' out of ' + RAW.length) : ' positions') + ' • sort by filters';
-  }
-
+  resetPagination();
+  renderWithPagination();
+}
   function setSyncStatus(text, ok){
     var el = document.getElementById('syncStatus');
     el.textContent = text;
