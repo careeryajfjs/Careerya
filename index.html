@@ -438,11 +438,10 @@
   var CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID;
   var REFRESH_MS = 5 * 60 * 1000; // auto re-fetch every 5 minutes
 
-  var RAW = [];              // full job list, current source of truth
+var RAW = [];              // full job list, current source of truth
   var state = { q: '', city: '', company: '' };
-  var RAW = [];              // full job list, current source of truth
-  var state = { q: '', city: '', company: '' };
-  var animatedRows = new WeakSet();
+  var PAGE_SIZE = 99;
+  var visibleCount = PAGE_SIZE;
   var animatedRows = new WeakSet();
   var FLAP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
