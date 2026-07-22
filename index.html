@@ -226,7 +226,7 @@
   .btn-amber:hover { background: var(--amber-soft); transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgba(0,82,204,0.6); }
 
   .col-hdr {
-    display: grid; grid-template-columns: 108px 1fr 190px 170px 100px; gap: 14px;
+    display: grid; grid-template-columns: 1fr 190px 170px 100px; gap: 14px;
     padding: 10px 26px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--text-faint); border-bottom: 1px solid var(--border);
     transition: border-color 0.3s ease, color 0.3s ease;
@@ -234,17 +234,15 @@
 
   #rows { display: flex; flex-direction: column; }
   .row {
-    display: grid; grid-template-columns: 108px 1fr 190px 170px 100px; gap: 14px; align-items: center;
+    display: grid; grid-template-columns: 1fr 190px 170px 100px; gap: 14px; align-items: start; padding-top: 13px; padding-bottom: 13px;
     padding: 13px 26px; border-bottom: 1px solid var(--border); transition: background 0.15s ease, border-color 0.3s ease;
   }
   .row:nth-child(odd) { background: var(--row-alt); }
   .row:hover { background: rgba(0,82,204,0.045); }
 
-  .cell-time { font-family: var(--mono); font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-  .cell-time .day { display: block; font-size: 10px; color: var(--text-faint); margin-top: 2px; }
 
   .cell-title { min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .cell-title .t { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cell-title .t { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: clip; word-break: break-word; min-width: 0; flex: 1 1 100%; }
   
   .urgency-tag {
     display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9px; 
@@ -260,9 +258,8 @@
   .urgency-tag .tag-emoji { font-size: 11px; }
   .urgency-tag .tag-label { font-size: 8px; }
 
-  .cell-company { font-family: var(--mono); font-size: 12.5px; color: var(--amber-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cell-city { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
+  .cell-company { font-family: var(--mono); font-size: 12.5px; color: var(--amber-soft); white-space: nowrap; overflow: hidden; text-overflow: clip; word-break: break-word; }
+  .cell-city { font-size: 12.5px; color: var(--text-dim); white-space: normal; overflow: visible; text-overflow: clip; word-break: break-word; align-self: start; min-width: 0; }
   .cell-apply { text-align: right; }
   .apply-btn {
     display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px;
@@ -298,7 +295,7 @@
 }
     .col-hdr { display: none; }
     .row { grid-template-columns: 1fr; gap: 6px; padding: 16px 18px; position: relative; }
-    .cell-time { order: 3; } .cell-title { order: 1; } .cell-company { order: 2; } .cell-city { order: 2; }
+    .cell-title { order: 1; } .cell-company { order: 2; } .cell-city { order: 2; }
     .cell-apply { order: 4; text-align: left; margin-top: 4px; }
     .cell-company::before { content: "@ "; color: var(--text-faint); }
     .cell-city::before { content: "📍 "; }
@@ -364,8 +361,8 @@
         <input type="text" id="searchInput" placeholder="e.g. software engineer, Nvidia, product manager…" autocomplete="off">
       </div>
       <div class="field">
-        <label for="citySelect">City</label>
-        <select id="citySelect"><option value="">All cities</option></select>
+        <label for="citySelect">Location</label>
+        <select id="citySelect"><option value="">All Locations</option></select>
       </div>
       <div class="field">
         <label for="companySelect">Company</label>
@@ -387,7 +384,7 @@
     </div>
 
     <div class="col-hdr">
-      <span>Posted</span><span>Role</span><span>Company</span><span>City</span><span style="text-align:right">Apply</span>
+      <span>Role</span><span>Company</span><span>Location</span><span style="text-align:right">Apply</span>
     </div>
 
     <div id="rows"></div>
@@ -628,10 +625,7 @@ var RAW = [];              // full job list, current source of truth
     var row = document.createElement('div');
     row.className = 'row';
 
-    var cTime = document.createElement('div');
-    cTime.className = 'cell-time';
-    cTime.innerHTML = escapeHtml(ta.rel) + '<span class="day">' + escapeHtml(ta.day) + '</span>';
-
+   
     var cTitle = document.createElement('div');
     cTitle.className = 'cell-title';
     var titleInner = document.createElement('span');
@@ -664,7 +658,7 @@ var RAW = [];              // full job list, current source of truth
     a.textContent = 'Apply →';
     cApply.appendChild(a);
 
-    row.appendChild(cTime);
+    
     row.appendChild(cTitle);
     row.appendChild(cCompany);
     row.appendChild(cCity);
