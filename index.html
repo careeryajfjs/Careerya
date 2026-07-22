@@ -431,9 +431,7 @@
     applyTheme();
   });
 
-  var SHEET_ID = '1O3rfk4W9wvObjerHe6Qm7Yjxcw1LZtRUSXbW4rVW1J4';
-  var GID = '1409451670';
-  var CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID;
+ var CSV_URL = 'https://delicate-silence-9905careerya-jobs-proxy.careerya-jfjs.workers.dev';
   var REFRESH_MS = 5 * 60 * 1000; // auto re-fetch every 5 minutes
 
 var RAW = [];              // full job list, current source of truth
@@ -712,7 +710,7 @@ var RAW = [];              // full job list, current source of truth
 
   function refreshData(isInitial){
     setSyncStatus(isInitial ? 'Loading sheet…' : 'Syncing…', true);
-    var bustUrl = CSV_URL + '&_ts=' + Date.now();
+    var bustUrl = CSV_URL + '?_ts=' + Date.now();
     fetch(bustUrl, { cache: 'no-store' })
       .then(function(res){
         if(!res.ok) throw new Error('HTTP ' + res.status);
